@@ -32,6 +32,19 @@ int main(int argc, char *argv[]){
             continue;
         }
 
+        // Handle client request
+        char buffer[1024];
+        ssize_t bytes_read = read(client_fd, buffer, sizeof(buffer) - 1);
+        if (bytes_read < 0){
+            fprintf(stderr, "Failed to read request\n");
+            close(client_fd);
+            continue;
+        }
+        buffer[bytes_read] = '\0';
+
+       printf("%s", buffer);
+
+
         const char *response =
         "HTTP/1.1 200 OK\r\n"
         "Content-Type: text/plain\r\n"

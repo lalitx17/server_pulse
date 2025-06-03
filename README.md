@@ -7,7 +7,7 @@ Want to check how your computer is doing but your are far away?
 ```
 server-pulse/
 ├── examples/                  # API request handlers and endpoints
-├── metrics/                   # Gather the metrics
+├── metrics/                   # Gather the PC metrics
 ├── request/                   # Parse the requests
 ├── response/                  # Handle the responses
 └── server/                    # building and managing the server

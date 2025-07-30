@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 
-typedef struct header{
+typedef struct header {
     char *name;
     char *value;
 } header_t;
@@ -19,8 +19,9 @@ typedef struct Request {
 
 int request_init(int client_fd, char *buffer, size_t buffer_size);
 int request_parse(const char *buffer, request_t *request);
-int request(int client_fd, char *buffer, size_t buffer_size, request_t *request);
+int request(int client_fd, char *buffer, size_t buffer_size,
+            request_t *request);
+int print_request(request_t *Request);
 void request_destroy(request_t *request);
 
-
-#endif //REQUEST_H
+#endif // REQUEST_H

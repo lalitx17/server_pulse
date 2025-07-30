@@ -3,31 +3,37 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/socket.h>
 
 #define PORT 8080
 
-
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[])
+{
     int port = PORT;
-    if (argc == 2){
+    if (argc == 2)
+    {
         port = atoi(argv[1]);
-        if (port <= 0 || port > 65535){
+        if (port <= 0 || port > 65535)
+        {
             fprintf(stderr, "Invalid port number\n");
             return 1;
         }
     }
 
     server_t serv;
-    if (Server(&serv, port) < 0){
+    if (Server(&serv, port) < 0)
+    {
         fprintf(stderr, "Failed to start server\n");
         return 1;
     }
 
     printf("Server started on port %d\n", port);
 
-    while(1){
+    while (1)
+    {
         int client_fd = client_accept(&serv);
-        if (client_fd < 0){
+        if (client_fd < 0)
+        {
             fprintf(stderr, "Failed to accept client\n");
             continue;
         }
@@ -35,25 +41,26 @@ int main(int argc, char *argv[]){
         // Handle client request
         char buffer[1024];
         ssize_t bytes_read = read(client_fd, buffer, sizeof(buffer) - 1);
-        if (bytes_read < 0){
+        if (bytes_read < 0)
+        {
             fprintf(stderr, "Failed to read request\n");
             close(client_fd);
             continue;
         }
         buffer[bytes_read] = '\0';
 
-       printf("%s", buffer);
-
+        printf("%s", buffer);
 
         const char *response =
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/plain\r\n"
-        "Content-Length: 13\r\n"
-        "Connection: close\r\n"
-        "\r\n"
-        "Hello World";
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Type: text/html\r\n"
+            "Content-Length: 45\r\n"
+            "Connection: close\r\n"
+            "\r\n"
+            "<h1>Hello World</h1><p>This is HTML!</p>\r\n";
 
         write(client_fd, response, strlen(response));
+        shutdown(client_fd, SHUT_WR);
         close(client_fd);
     }
 }

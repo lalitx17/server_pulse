@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 response_t response_init(status_code_t status_code, char *headers, char *body) {
     response_t resp;
@@ -97,6 +99,138 @@ char *response(response_t *response) {
     if (response->body != NULL) {
         strcat(response_str, response->body);
     }
+
+    return response_str;
+}
+
+char *send_html(char *html_content) {
+    if (html_content == NULL) {
+        return NULL;
+    }
+
+    char headers[512];
+    snprintf(headers, sizeof(headers),
+             "Content-Type: text/html; charset=utf-8\r\n"
+             "Content-Length: %zu\r\n"
+             "Cache-Control: no-cache",
+             strlen(html_content));
+
+    response_t resp = response_init(STATUS_OK, headers, html_content);
+    char *response_str = response(&resp);
+
+    response_free(&resp);
+
+    return response_str;
+}
+
+char *send_error_html(status_code_t status_code, const char *title,
+                      const char *message) {
+    if (title == NULL)
+        title = "Error";
+    if (message == NULL)
+        message = "An error occurred";
+
+    char html_content[512];
+    snprintf(html_content, sizeof(html_content),
+             "<html><head><title>%s</title></head>"
+             "<body><h1>%d - %s</h1><p>%s</p></body></html>",
+             title, status_code, title, message);
+
+    char headers[256];
+    snprintf(headers, sizeof(headers),
+             "Content-Type: text/html; charset=utf-8\r\n"
+             "Content-Length: %zu\r\n"
+             "Cache-Control: no-cache",
+             strlen(html_content));
+
+    response_t resp = response_init(status_code, headers, html_content);
+    char *response_str = response(&resp);
+
+    response_free(&resp);
+
+    return response_str;
+}
+
+char *send_file(char *file_path) {
+    if (file_path == NULL) {
+        return NULL;
+    }
+
+    if (access(file_path, F_OK) != 0) {
+        return send_error_html(
+            STATUS_NOT_FOUND, "File Not Found",
+            "The requested file could not be found on this server.");
+    }
+
+    FILE *file = fopen(file_path, "rb");
+    if (file == NULL) {
+        return send_error_html(STATUS_INTERNAL_SERVER_ERROR, "File Open Error",
+                               "Failed to open the requested file.");
+    }
+
+    struct stat file_stat;
+    if (stat(file_path, &file_stat) != 0) {
+        fclose(file);
+        return send_error_html(STATUS_INTERNAL_SERVER_ERROR, "File Stat Error",
+                               "Failed to get file information.");
+    }
+
+    char *file_content = malloc(file_stat.st_size + 1);
+    if (file_content == NULL) {
+        fclose(file);
+        return send_error_html(STATUS_INTERNAL_SERVER_ERROR,
+                               "Memory Allocation Error",
+                               "Failed to allocate memory for file content.");
+    }
+
+    size_t bytes_read = fread(file_content, 1, file_stat.st_size, file);
+    file_content[bytes_read] = '\0';
+    fclose(file);
+
+    char *content_type = "application/octet-stream";
+    char *ext = strrchr(file_path, '.');
+    if (ext != NULL) {
+        ext++;
+        if (strcmp(ext, "html") == 0) {
+            content_type = "text/html; charset=utf-8";
+        } else if (strcmp(ext, "css") == 0) {
+            content_type = "text/css; charset=utf-8";
+        } else if (strcmp(ext, "js") == 0) {
+            content_type = "application/javascript; charset=utf-8";
+        } else if (strcmp(ext, "json") == 0) {
+            content_type = "application/json; charset=utf-8";
+        } else if (strcmp(ext, "xml") == 0) {
+            content_type = "application/xml; charset=utf-8";
+        } else if (strcmp(ext, "txt") == 0) {
+            content_type = "text/plain; charset=utf-8";
+        } else if (strcmp(ext, "png") == 0) {
+            content_type = "image/png";
+        } else if (strcmp(ext, "jpg") == 0 || strcmp(ext, "jpeg") == 0) {
+            content_type = "image/jpeg";
+        } else if (strcmp(ext, "gif") == 0) {
+            content_type = "image/gif";
+        } else if (strcmp(ext, "svg") == 0) {
+            content_type = "image/svg+xml";
+        } else if (strcmp(ext, "ico") == 0) {
+            content_type = "image/x-icon";
+        } else if (strcmp(ext, "webp") == 0) {
+            content_type = "image/webp";
+        } else if (strcmp(ext, "mp4") == 0) {
+            content_type = "video/mp4";
+        }
+    }
+
+    char headers[512];
+    snprintf(headers, sizeof(headers),
+             "Content-Type: %s\r\n"
+             "Content-Length: %zu\r\n"
+             "Cache-Control: no-cache",
+             content_type, bytes_read);
+
+    response_t resp = response_init(STATUS_OK, headers, file_content);
+    char *response_str = response(&resp);
+
+    response_free(&resp);
 
     return response_str;
 }

@@ -25,6 +25,8 @@ typedef struct Response {
 
 response_t response_init(status_code_t status_code, char *headers, char *body);
 char *response(response_t *response);
+char *send_html(char *html_content);
+char *send_file(char *file_path);
 void response_free(response_t *response);
 
 #endif // RESPONSE_H

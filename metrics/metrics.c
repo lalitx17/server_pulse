@@ -83,13 +83,13 @@ int get_memory_metrics(memory_metrics_t *mem) {
     while (fgets(buffer, sizeof(buffer), memfile)) {
         if (sscanf(buffer, "MemTotal: %f kB", &mem_total) == 1)
             continue;
-        if (sscanf(buffer, "MemFree: %f kB", &mem_total) == 1)
+        if (sscanf(buffer, "MemFree: %f kB", &mem_free) == 1)
             continue;
-        if (sscanf(buffer, "Cached: %f kB", &mem_total) == 1)
+        if (sscanf(buffer, "Cached: %f kB", &mem_cache) == 1)
             continue;
-        if (sscanf(buffer, "SwapTotal: %f kB", &mem_total) == 1)
+        if (sscanf(buffer, "SwapTotal: %f kB", &swap_total) == 1)
             continue;
-        if (sscanf(buffer, "SwapFree: %f kB", &mem_total) == 1)
+        if (sscanf(buffer, "SwapFree: %f kB", &swap_free) == 1)
             continue;
     }
 

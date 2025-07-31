@@ -1,9 +1,14 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+#include "../route/route.h"
+
 typedef struct server {
     int listen_fd;
     int port;
+    route_t *routes;
+    int routes_count;
+    int routes_capacity;
 } server_t;
 
 int Server(server_t *serv, int port);

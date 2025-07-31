@@ -11,12 +11,17 @@ int Server(server_t *serv, int port) {
         return -1;
 
     serv->port = port;
+    serv->routes_count = 0;
+
+    if (routes_init(&serv->routes, &serv->routes_capacity) != 0) {
+        return -1;
+    }
 
     serv->listen_fd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (serv->listen_fd < 0) {
         perror("socket");
-        close(serv->listen_fd);
+        routes_free(serv->routes);
         exit(EXIT_FAILURE);
     }
 
@@ -28,12 +33,14 @@ int Server(server_t *serv, int port) {
     if (bind(serv->listen_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
         perror("bind");
         close(serv->listen_fd);
+        routes_free(serv->routes);
         exit(EXIT_FAILURE);
     }
 
     if (listen(serv->listen_fd, 1) < 0) {
         perror("listen");
         close(serv->listen_fd);
+        routes_free(serv->routes);
         exit(EXIT_FAILURE);
     }
 
@@ -53,4 +60,23 @@ int client_accept(server_t *serv) {
     }
 
     return client_fd;
+}
+
+int server_close(server_t *serv) {
+    if (!serv)
+        return -1;
+
+    if (serv->listen_fd >= 0) {
+        close(serv->listen_fd);
+        serv->listen_fd = -1;
+    }
+
+    if (serv->routes) {
+        routes_free(serv->routes);
+        serv->routes = NULL;
+        serv->routes_count = 0;
+        serv->routes_capacity = 0;
+    }
+
+    return 0;
 }

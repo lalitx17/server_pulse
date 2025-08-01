@@ -26,7 +26,7 @@ int request_init(int client_fd, char *buffer, size_t buffer_size) {
     if (!buffer || buffer_size == 0)
         return -1;
 
-    ssize_t bytes_read = read(client_fd, buffer, buffer_size);
+    ssize_t bytes_read = read(client_fd, buffer, buffer_size - 1);
 
     if (bytes_read < 0) {
         perror("error reading from client");
@@ -34,6 +34,7 @@ int request_init(int client_fd, char *buffer, size_t buffer_size) {
     }
 
     buffer[bytes_read] = '\0';
+
     return (int)bytes_read;
 }
 

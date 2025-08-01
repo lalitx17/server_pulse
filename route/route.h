@@ -3,7 +3,9 @@
 
 #include "../request/request.h"
 #include "../response/response.h"
-#include "../server/server.h"
+
+// Forward declaration to avoid circular dependency
+typedef struct server server_t;
 
 typedef void (*route_handler_t)(request_t *request, response_t *response);
 

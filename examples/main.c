@@ -1,4 +1,5 @@
 #include "../request/request.h"
+#include "../response/response.h"
 #include "../server/server.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,6 +8,14 @@
 #include <unistd.h>
 
 #define PORT 8080
+
+void check_error(int ret, const char *msg);
+
+void root_handler(request_t *request, response_t *response) {
+    char *html_content = "<h1>Hello World</h1><p>This is HTML!</p>";
+
+    send_html(response, html_content);
+}
 
 void check_error(int ret, const char *msg) {
     if (ret < 0) {
@@ -31,11 +40,15 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
+    add_route(&serv, "GET", "/", root_handler);
+
     printf("Server started on port %d\n", port);
 
     while (1) {
         int client_fd = client_accept(&serv);
-        check_error(client_fd, "client fd");
+        if (client_fd < 0) {
+            continue;
+        }
 
         char buffer[1024];
         request_t *request = malloc(sizeof(request_t));
@@ -44,25 +57,44 @@ int main(int argc, char *argv[]) {
             exit(EXIT_FAILURE);
         }
         memset(request, 0, sizeof(request_t));
-        check_error(request_init(client_fd, buffer, sizeof(buffer)),
-                    "request init");
+        int bytes_read = request_init(client_fd, buffer, sizeof(buffer));
+        if (bytes_read <= 0) {
+            fprintf(stderr,
+                    "Failed to read from client or client disconnected\n");
+            close(client_fd);
+            continue;
+        }
+        printf("buffer: %s\n", buffer);
         int parse_result = request_parse(buffer, request);
         if (parse_result == 0) {
             check_error(print_request(request), "print request");
         } else {
             fprintf(stderr, "Failed to parse request\n");
         }
+
+        route_t *route = route_find(&serv, request->method, request->url);
+        if (route) {
+            response_t response = {0};
+            route->handler(request, &response);
+            char *response_str = response_string(&response);
+            check_error(write(client_fd, response_str, strlen(response_str)),
+                        "write");
+            free(response_str);
+            response_free(&response);
+        } else {
+            response_t response = {0};
+            send_error_html(&response, STATUS_NOT_FOUND, "Not Found",
+                            "The requested resource was not found.");
+            char *response_str = response_string(&response);
+            check_error(write(client_fd, response_str, strlen(response_str)),
+                        "write");
+            free(response_str);
+            response_free(&response);
+        }
+
         request_destroy(request);
         free(request);
 
-        const char *response = "HTTP/1.1 200 OK\r\n"
-                               "Content-Type: text/html\r\n"
-                               "Content-Length: 45\r\n"
-                               "Connection: close\r\n"
-                               "\r\n"
-                               "<h1>Hello World</h1><p>This is HTML!</p>\r\n";
-
-        check_error(write(client_fd, response, strlen(response)), "write");
         shutdown(client_fd, SHUT_WR);
         close(client_fd);
     }

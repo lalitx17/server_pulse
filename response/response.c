@@ -5,7 +5,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-response_t response_init(status_code_t status_code, char *headers, char *body) {
+response_t response_init(status_code_t status_code, char *headers,
+                         const char *body) {
     response_t resp;
     resp.status_code = status_code;
 
@@ -70,13 +71,13 @@ response_t response_init(status_code_t status_code, char *headers, char *body) {
     return resp;
 }
 
-char *response(response_t *response) {
+char *response_string(response_t *response) {
     size_t total_len = strlen(response->status_line) + 2;
 
     if (response->headers != NULL) {
-        total_len += strlen(response->headers) + 2;
+        total_len += strlen(response->headers) + 4;
     } else {
-        total_len += 2;
+        total_len += 4;
     }
 
     if (response->body != NULL) {
@@ -91,9 +92,9 @@ char *response(response_t *response) {
 
     if (response->headers != NULL) {
         strcat(response_str, response->headers);
-        strcat(response_str, "\r\n");
+        strcat(response_str, "\r\n\r\n");
     } else {
-        strcat(response_str, "\r\n");
+        strcat(response_str, "\r\n\r\n");
     }
 
     if (response->body != NULL) {
@@ -103,9 +104,9 @@ char *response(response_t *response) {
     return response_str;
 }
 
-char *send_html(char *html_content) {
-    if (html_content == NULL) {
-        return NULL;
+void send_html(response_t *response, char const *html_content) {
+    if (html_content == NULL || response == NULL) {
+        return;
     }
 
     char headers[512];
@@ -115,16 +116,17 @@ char *send_html(char *html_content) {
              "Cache-Control: no-cache",
              strlen(html_content));
 
-    response_t resp = response_init(STATUS_OK, headers, html_content);
-    char *response_str = response(&resp);
+    response_free(response);
 
-    response_free(&resp);
-
-    return response_str;
+    *response = response_init(STATUS_OK, headers, html_content);
 }
 
-char *send_error_html(status_code_t status_code, const char *title,
-                      const char *message) {
+void send_error_html(response_t *response, status_code_t status_code,
+                     const char *title, const char *message) {
+    if (response == NULL) {
+        return;
+    }
+
     if (title == NULL)
         title = "Error";
     if (message == NULL)
@@ -143,44 +145,46 @@ char *send_error_html(status_code_t status_code, const char *title,
              "Cache-Control: no-cache",
              strlen(html_content));
 
-    response_t resp = response_init(status_code, headers, html_content);
-    char *response_str = response(&resp);
+    response_free(response);
 
-    response_free(&resp);
-
-    return response_str;
+    *response = response_init(status_code, headers, html_content);
 }
 
-char *send_file(char *file_path) {
-    if (file_path == NULL) {
-        return NULL;
+void send_file(response_t *response, char const *file_path) {
+    if (file_path == NULL || response == NULL) {
+        return;
     }
 
     if (access(file_path, F_OK) != 0) {
-        return send_error_html(
-            STATUS_NOT_FOUND, "File Not Found",
+        send_error_html(
+            response, STATUS_NOT_FOUND, "File Not Found",
             "The requested file could not be found on this server.");
+        return;
     }
 
     FILE *file = fopen(file_path, "rb");
     if (file == NULL) {
-        return send_error_html(STATUS_INTERNAL_SERVER_ERROR, "File Open Error",
-                               "Failed to open the requested file.");
+        send_error_html(response, STATUS_INTERNAL_SERVER_ERROR,
+                        "File Open Error",
+                        "Failed to open the requested file.");
+        return;
     }
 
     struct stat file_stat;
     if (stat(file_path, &file_stat) != 0) {
         fclose(file);
-        return send_error_html(STATUS_INTERNAL_SERVER_ERROR, "File Stat Error",
-                               "Failed to get file information.");
+        send_error_html(response, STATUS_INTERNAL_SERVER_ERROR,
+                        "File Stat Error", "Failed to get file information.");
+        return;
     }
 
     char *file_content = malloc(file_stat.st_size + 1);
     if (file_content == NULL) {
         fclose(file);
-        return send_error_html(STATUS_INTERNAL_SERVER_ERROR,
-                               "Memory Allocation Error",
-                               "Failed to allocate memory for file content.");
+        send_error_html(response, STATUS_INTERNAL_SERVER_ERROR,
+                        "Memory Allocation Error",
+                        "Failed to allocate memory for file content.");
+        return;
     }
 
     size_t bytes_read = fread(file_content, 1, file_stat.st_size, file);
@@ -227,17 +231,26 @@ char *send_file(char *file_path) {
              "Cache-Control: no-cache",
              content_type, bytes_read);
 
-    response_t resp = response_init(STATUS_OK, headers, file_content);
-    char *response_str = response(&resp);
+    response_free(response);
 
-    response_free(&resp);
-
-    return response_str;
+    *response = response_init(STATUS_OK, headers, file_content);
 }
 
 void response_free(response_t *response) {
-    free(response->status_line);
-    free(response->headers);
-    free(response->body);
-    free(response);
+    if (!response) {
+        return;
+    }
+
+    if (response->status_line) {
+        free(response->status_line);
+        response->status_line = NULL;
+    }
+    if (response->headers) {
+        free(response->headers);
+        response->headers = NULL;
+    }
+    if (response->body) {
+        free(response->body);
+        response->body = NULL;
+    }
 }

@@ -27,5 +27,8 @@ typedef struct disk_metrics {
 int get_cpu_metrics(cpu_metrics_t *cpu);
 int get_memory_metrics(memory_metrics_t *mem);
 int get_disk_metrics(disk_metrics_t *disk);
+char *get_cpu_metrics_json();
+char *get_memory_metrics_json();
+char *get_disk_metrics_json();
 
 #endif

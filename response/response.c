@@ -236,6 +236,22 @@ void send_file(response_t *response, char const *file_path) {
     *response = response_init(STATUS_OK, headers, file_content);
 }
 
+void send_json(response_t *response, char const *json_content) {
+    if (json_content == NULL || response == NULL) {
+        return;
+    }
+
+    char headers[512];
+    snprintf(headers, sizeof(headers),
+             "Content-Type: application/json; charset=utf-8\r\n"
+             "Content-Length: %zu\r\n"
+             "Cache-Control: no-cache",
+             strlen(json_content));
+
+    response_free(response);
+    *response = response_init(STATUS_OK, headers, json_content);
+}
+
 void response_free(response_t *response) {
     if (!response) {
         return;

@@ -3,6 +3,7 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/statvfs.h>
@@ -60,6 +61,10 @@ int get_cpu_metrics(cpu_metrics_t *cpu) {
                 if (colon) {
                     strncpy(cpu_model, colon + 2, sizeof(cpu_model) - 1);
                     cpu_model[sizeof(cpu_model) - 1] = '\0';
+                    char *newline = strchr(cpu_model, '\n');
+                    if (newline) {
+                        *newline = '\0';
+                    }
                 }
                 break;
             }
@@ -123,4 +128,41 @@ int get_disk_metrics(disk_metrics_t *disk) {
     disk->used_disk = used;
     disk->disk_usage = usage;
     return 0;
+}
+
+char *get_cpu_metrics_json() {
+    cpu_metrics_t cpu;
+    get_cpu_metrics(&cpu);
+
+    char *json = malloc(4096);
+    snprintf(json, 4096,
+             "{\"cpu_usage_percent\": %f, \"cpu_count\": %d, "
+             "\"cpu_model\": \"%s\", \"processes_count\": %d}",
+             cpu.cpu_usage_percent, cpu.cpu_count, cpu.cpu_model,
+             cpu.processes_count);
+    return json;
+}
+
+char *get_memory_metrics_json() {
+    memory_metrics_t mem;
+    get_memory_metrics(&mem);
+    char *json = malloc(2048);
+    snprintf(json, 2048,
+             "{\"total_memory\": %f, \"free_memory\": %f, "
+             "\"cached_memory\": %f, \"swap_total\": %f, "
+             "\"swap_free\": %f, \"memory_pressure\": %f}",
+             mem.total_memory, mem.free_memory, mem.cached_memory,
+             mem.swap_total, mem.swap_free, mem.memory_pressure);
+    return json;
+}
+
+char *get_disk_metrics_json() {
+    disk_metrics_t disk;
+    get_disk_metrics(&disk);
+    char *json = malloc(2048);
+    snprintf(json, 2048,
+             "{\"total_disk\": %f, \"free_disk\": %f, "
+             "\"used_disk\": %f, \"disk_usage\": %f}",
+             disk.total_disk, disk.free_disk, disk.used_disk, disk.disk_usage);
+    return json;
 }

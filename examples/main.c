@@ -1,3 +1,4 @@
+#include "../metrics/metrics.h"
 #include "../request/request.h"
 #include "../response/response.h"
 #include "../server/server.h"
@@ -12,9 +13,37 @@
 void check_error(int ret, const char *msg);
 
 void root_handler(request_t *request, response_t *response) {
-    char *html_content = "<h1>Hello World</h1><p>This is HTML!</p>";
+    send_file(response, "public/home.html");
+}
 
-    send_html(response, html_content);
+void cpustat_handler(request_t *request, response_t *response) {
+    send_file(response, "public/cpustat.html");
+}
+
+void cpustat_json_handler(request_t *request, response_t *response) {
+    char *json = get_cpu_metrics_json();
+    send_json(response, json);
+    free(json);
+}
+
+void memorystat_handler(request_t *request, response_t *response) {
+    send_file(response, "public/memorystat.html");
+}
+
+void memorystat_json_handler(request_t *request, response_t *response) {
+    char *json = get_memory_metrics_json();
+    send_json(response, json);
+    free(json);
+}
+
+void diskstat_handler(request_t *request, response_t *response) {
+    send_file(response, "public/diskstat.html");
+}
+
+void diskstat_json_handler(request_t *request, response_t *response) {
+    char *json = get_disk_metrics_json();
+    send_json(response, json);
+    free(json);
 }
 
 void check_error(int ret, const char *msg) {
@@ -41,6 +70,12 @@ int main(int argc, char *argv[]) {
     }
 
     add_route(&serv, "GET", "/", root_handler);
+    add_route(&serv, "GET", "/cpustat", cpustat_handler);
+    add_route(&serv, "GET", "/cpustatjson", cpustat_json_handler);
+    add_route(&serv, "GET", "/memorystat", memorystat_handler);
+    add_route(&serv, "GET", "/memorystatjson", memorystat_json_handler);
+    add_route(&serv, "GET", "/diskstat", diskstat_handler);
+    add_route(&serv, "GET", "/diskstatjson", diskstat_json_handler);
 
     printf("Server started on port %d\n", port);
 

@@ -29,14 +29,12 @@ server-pulse/
 
 ```json
 {
-  "total_mb": int,
-  "used_mb": int,
-  "available_mb": int,
-  "usage_percent": float,
-  "swap_total_mb": int,
-  "swap_used_mb": int,
-  "swap_usage_percent": float,
-  "memory_pressure": string
+  "total_memory": float,
+  "free_memory": float,
+  "cached_memory": float,
+  "swap_total": float,
+  "swap_free": float,
+  "memory_pressure": float
 }
 ```
 

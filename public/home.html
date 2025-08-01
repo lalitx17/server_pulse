@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PC-Pulse - Remote System Monitoring</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .intro {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .intro h2 {
+            color: #4a5568;
+            margin-bottom: 15px;
+            font-size: 2rem;
+        }
+
+        .intro p {
+            color: #718096;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .endpoints-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .endpoint-card {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 25px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .endpoint-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .endpoint-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .endpoint-method {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        .endpoint-path {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            color: #2d3748;
+            font-weight: bold;
+        }
+
+        .endpoint-description {
+            color: #4a5568;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .response-example {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+
+        .response-example pre {
+            margin: 0;
+            white-space: pre-wrap;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .feature {
+            text-align: center;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 10px;
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .feature h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .feature p {
+            color: #718096;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            opacity: 0.8;
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .endpoints-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🖥️ PC-Pulse</h1>
+            <p>Remote System Monitoring Dashboard</p>
+        </div>
+
+        <div class="main-content">
+            <div class="intro">
+                <h2>Welcome to PC-Pulse</h2>
+                <p>Monitor your computer's performance remotely with real-time metrics. Get instant insights into CPU usage, memory consumption, and disk space from anywhere in the world.</p>
+            </div>
+
+            <div class="endpoints-grid">
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method">GET</span>
+                        <span class="endpoint-path">/cpu</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Get comprehensive CPU information including usage percentage, core count, model details, and active processes.
+                    </div>
+                    <div class="response-example">
+                        <pre>{
+  "cpu_usage_percent": 45.2,
+  "cpu_count": 8,
+  "cpu_model": "Intel Core i7-10700K",
+  "processes_count": 156
+}</pre>
+                    </div>
+                </div>
+
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method">GET</span>
+                        <span class="endpoint-path">/memory</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Monitor memory usage with detailed information about RAM and swap memory utilization.
+                    </div>
+                    <div class="response-example">
+                        <pre>{
+  "total_mb": 16384,
+  "used_mb": 8192,
+  "available_mb": 8192,
+  "usage_percent": 50.0,
+  "swap_total_mb": 4096,
+  "swap_used_mb": 512,
+  "swap_usage_percent": 12.5,
+  "memory_pressure": "normal"
+}</pre>
+                    </div>
+                </div>
+
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method">GET</span>
+                        <span class="endpoint-path">/disk</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Check disk space utilization with total, free, and used space information.
+                    </div>
+                    <div class="response-example">
+                        <pre>{
+  "total_disk": 1000000,
+  "free_disk": 300000,
+  "used_disk": 700000,
+  "disk_usage": 70.0
+}</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Real-time Monitoring</h3>
+                    <p>Get instant updates on your system's performance metrics</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🌐</div>
+                    <h3>Remote Access</h3>
+                    <p>Monitor your PC from anywhere with a simple HTTP request</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📊</div>
+                    <h3>Comprehensive Data</h3>
+                    <p>Detailed metrics for CPU, memory, and disk usage</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Secure & Lightweight</h3>
+                    <p>Built with C for optimal performance and security</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Built with ❤️ using C | <a href="https://datatracker.ietf.org/doc/html/rfc7230#section-2" target="_blank">RFC7230 Compliant</a></p>
+        </div>
+    </div>
+</body>
+</html>

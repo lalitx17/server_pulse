@@ -3,450 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Disk Statistics - PC-Pulse</title>
+    <title>Disk Statistics</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-            color: white;
-        }
-
-        .header h1 {
-            font-size: 3rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-
-        .nav-bar {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .nav-link {
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 25px;
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .nav-link:hover, .nav-link.active {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-
-        .main-content {
-            background: white;
-            border-radius: 15px;
-            padding: 40px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 10px;
-        }
-
-        .last-updated {
-            color: #6c757d;
-            font-size: 0.9rem;
-        }
-
-        .refresh-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-        }
-
-        .refresh-btn:hover {
-            background: #5a67d8;
-            transform: translateY(-2px);
-        }
-
-        .refresh-btn:disabled {
-            background: #cbd5e0;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-
-        .metric-card {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 30px;
-            text-align: center;
-            border-left: 4px solid #667eea;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .metric-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-
-        .metric-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-        }
-
-        .metric-value {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #2d3748;
-            margin-bottom: 10px;
-        }
-
-        .metric-label {
-            color: #718096;
-            font-size: 1.1rem;
-            font-weight: 500;
-        }
-
-        .metric-unit {
-            font-size: 1rem;
-            color: #a0aec0;
-        }
-
-        .disk-usage-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .disk-usage-card .metric-value,
-        .disk-usage-card .metric-label {
-            color: white;
-        }
-
-        .disk-usage-card .metric-unit {
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .progress-container {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            margin-top: 15px;
-            overflow: hidden;
-        }
-
-        .progress-bar {
-            height: 8px;
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: 10px;
-            transition: width 0.5s ease;
-        }
-
-        .error-message {
-            background: #fed7d7;
-            color: #c53030;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            margin-bottom: 20px;
-            border-left: 4px solid #e53e3e;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #718096;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .footer {
-            text-align: center;
-            color: white;
-            margin-top: 40px;
-            opacity: 0.8;
-        }
-
-        .footer a {
-            color: white;
-            text-decoration: underline;
-        }
-
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .main-content {
-                padding: 20px;
-            }
-            
-            .metrics-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .status-bar {
-                flex-direction: column;
-                gap: 15px;
-            }
-        }
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .metric { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .value { font-size: 24px; font-weight: bold; }
+        .nav { margin: 20px 0; }
+        .error { color: red; }
+        .loading { color: gray; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>💾 Disk Statistics</h1>
-            <p>Real-time disk monitoring and storage metrics</p>
+    <h1>Disk Statistics</h1>
+    
+    <div class="nav">
+        <a href="/">Home</a> | 
+        <a href="cpustat">CPU</a> | 
+        <a href="memorystat">Memory</a> | 
+        <a href="diskstat">Disk</a>
+    </div>
+    
+    <button onclick="fetchData()">Refresh</button>
+    <span id="lastUpdated">Last updated: Never</span>
+    
+    <div id="loading" class="loading">Loading...</div>
+    <div id="error" class="error" style="display:none;"></div>
+    
+    <div id="metrics" style="display:none;">
+        <div class="metric">
+            <div class="value" id="diskUsage">--</div>
+            <div>Disk Usage (%)</div>
         </div>
-
-        <div class="nav-bar">
-            <a href="home.html" class="nav-link">🏠 Home</a>
-            <a href="cpustat.html" class="nav-link">🖥️ CPU</a>
-            <a href="memorystat.html" class="nav-link">🧠 Memory</a>
-            <a href="diskstat.html" class="nav-link active">💾 Disk</a>
+        
+        <div class="metric">
+            <div class="value" id="totalSpace">--</div>
+            <div>Total Space (GB)</div>
         </div>
-
-        <div class="main-content">
-            <div class="status-bar">
-                <div class="last-updated" id="lastUpdated">
-                    Last updated: Never
-                </div>
-                <button class="refresh-btn" id="refreshBtn" onclick="fetchDiskData()">
-                    🔄 Refresh
-                </button>
-            </div>
-
-            <div id="errorContainer" style="display: none;"></div>
-            <div id="loadingContainer" class="loading">
-                <div class="spinner"></div>
-                <p>Loading disk data...</p>
-            </div>
-
-            <div id="metricsContainer" style="display: none;">
-                <div class="metrics-grid">
-                    <div class="metric-card disk-usage-card">
-                        <div class="metric-icon">💾</div>
-                        <div class="metric-value" id="diskUsage">--</div>
-                        <div class="metric-label">Disk Usage</div>
-                        <div class="metric-unit">%</div>
-                        <div class="progress-container">
-                            <div class="progress-bar" id="diskProgressBar" style="width: 0%"></div>
-                        </div>
-                    </div>
-
-                    <div class="metric-card">
-                        <div class="metric-icon">📊</div>
-                        <div class="metric-value" id="totalSpace">--</div>
-                        <div class="metric-label">Total Space</div>
-                        <div class="metric-unit">GB</div>
-                    </div>
-
-                    <div class="metric-card">
-                        <div class="metric-icon">📁</div>
-                        <div class="metric-value" id="usedSpace">--</div>
-                        <div class="metric-label">Used Space</div>
-                        <div class="metric-unit">GB</div>
-                    </div>
-
-                    <div class="metric-card">
-                        <div class="metric-icon">🆓</div>
-                        <div class="metric-value" id="freeSpace">--</div>
-                        <div class="metric-label">Free Space</div>
-                        <div class="metric-unit">GB</div>
-                    </div>
-                </div>
-
-                <div class="metric-card" style="grid-column: 1 / -1;">
-                    <div class="metric-icon">💿</div>
-                    <div class="metric-label" style="font-size: 1.3rem; margin-bottom: 15px;">Disk Information</div>
-                    <div class="metric-value" id="diskInfo" style="font-size: 1.5rem; word-break: break-word;">--</div>
-                </div>
-            </div>
+        
+        <div class="metric">
+            <div class="value" id="usedSpace">--</div>
+            <div>Used Space (GB)</div>
         </div>
-
-        <div class="footer">
-            <p>Built with ❤️ using C | <a href="https://datatracker.ietf.org/doc/html/rfc7230#section-2" target="_blank">RFC7230 Compliant</a></p>
+        
+        <div class="metric">
+            <div class="value" id="freeSpace">--</div>
+            <div>Free Space (GB)</div>
         </div>
     </div>
 
-            <script>
-        let autoRefreshInterval;
-
+    <script>
         function updateLastUpdated() {
             const now = new Date();
-            const timeString = now.toLocaleTimeString();
-            const dateString = now.toLocaleDateString();
-            document.getElementById('lastUpdated').textContent = `Last updated: ${dateString} ${timeString}`;
+            document.getElementById('lastUpdated').textContent = `Last updated: ${now.toLocaleString()}`;
         }
 
         function showError(message) {
-            const errorContainer = document.getElementById('errorContainer');
-            errorContainer.innerHTML = `
-                <div class="error-message">
-                    <strong>Error:</strong> ${message}
-                </div>
-            `;
-            errorContainer.style.display = 'block';
-            document.getElementById('metricsContainer').style.display = 'none';
-            document.getElementById('loadingContainer').style.display = 'none';
+            document.getElementById('error').textContent = message;
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('metrics').style.display = 'none';
+            document.getElementById('loading').style.display = 'none';
         }
 
         function showLoading() {
-            document.getElementById('loadingContainer').style.display = 'block';
-            document.getElementById('metricsContainer').style.display = 'none';
-            document.getElementById('errorContainer').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('metrics').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
         }
 
         function showMetrics() {
-            document.getElementById('metricsContainer').style.display = 'block';
-            document.getElementById('loadingContainer').style.display = 'none';
-            document.getElementById('errorContainer').style.display = 'none';
-        }
-
-        function formatBytes(bytes) {
-            if (bytes === 0) return '0 GB';
-            const gb = bytes / (1024 * 1024 * 1024);
-            return gb.toFixed(2);
+            document.getElementById('metrics').style.display = 'block';
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
         }
 
         function updateMetrics(data) {
-            const diskUsage = data.disk_usage || 0;
-            document.getElementById('diskUsage').textContent = diskUsage.toFixed(1);
-            document.getElementById('diskProgressBar').style.width = `${diskUsage}%`;
-
-            const totalSpace = data.total_disk || 0;
-            document.getElementById('totalSpace').textContent = totalSpace.toFixed(2);
-
-            const usedSpace = data.used_disk || 0;
-            document.getElementById('usedSpace').textContent = usedSpace.toFixed(2);
-
-            const freeSpace = data.free_disk || 0;
-            document.getElementById('freeSpace').textContent = freeSpace.toFixed(2);
-
-            const diskInfo = `Total: ${totalSpace} GB | Used: ${usedSpace} GB | Free: ${freeSpace} GB`;
-            document.getElementById('diskInfo').textContent = diskInfo;
-
-            const progressBar = document.getElementById('diskProgressBar');
-            if (diskUsage < 70) {
-                progressBar.style.background = '#48bb78';
-            } else if (diskUsage < 90) {
-                progressBar.style.background = '#ed8936';
-            } else {
-                progressBar.style.background = '#e53e3e';
-            }
+            document.getElementById('diskUsage').textContent = (data.disk_usage || 0).toFixed(1);
+            document.getElementById('totalSpace').textContent = (data.total_disk || 0).toFixed(2);
+            document.getElementById('usedSpace').textContent = (data.used_disk || 0).toFixed(2);
+            document.getElementById('freeSpace').textContent = (data.free_disk || 0).toFixed(2);
         }
 
-        async function fetchDiskData() {
-            const refreshBtn = document.getElementById('refreshBtn');
-            refreshBtn.disabled = true;
-            refreshBtn.textContent = '⏳ Loading...';
-
+        async function fetchData() {
             showLoading();
-
             try {
                 const response = await fetch('/diskstatjson');
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
-                
                 updateMetrics(data);
                 updateLastUpdated();
                 showMetrics();
-                
             } catch (error) {
-                console.error('Error fetching disk data:', error);
                 showError(`Failed to fetch disk data: ${error.message}`);
-            } finally {
-                refreshBtn.disabled = false;
-                refreshBtn.textContent = '🔄 Refresh';
             }
         }
 
-        function startAutoRefresh() {
-            autoRefreshInterval = setInterval(fetchDiskData, 5000);
-        }
-
-        function stopAutoRefresh() {
-            if (autoRefreshInterval) {
-                clearInterval(autoRefreshInterval);
-                autoRefreshInterval = null;
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            fetchDiskData();
-            startAutoRefresh();
-        });
-
-        document.addEventListener('visibilitychange', function() {
-            if (document.hidden) {
-                stopAutoRefresh();
-            } else {
-                startAutoRefresh();
-            }
-        });
-
-        window.addEventListener('beforeunload', stopAutoRefresh);
+        document.addEventListener('DOMContentLoaded', fetchData);
+        setInterval(fetchData, 5000);
     </script>
 </body>
 </html>

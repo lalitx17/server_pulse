@@ -42,9 +42,9 @@ server-pulse/
 
 ```json
 {
-  "total_disk": int,
-  "free_disk": int,
-  "used_disk": int,
+  "total_disk": float,
+  "free_disk": float,
+  "used_disk": float,
   "disk_usage": float
 }
 ```

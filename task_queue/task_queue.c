@@ -54,6 +54,13 @@ int task_queue_enqueue(task_queue_t *queue, int client_fd, request_t *request) {
     }
 
     new_task->client_fd = client_fd;
+    new_task->request = (request_t *)malloc(sizeof(request_t));
+    if (!new_task->request) {
+        free(new_task);
+        pthread_mutex_unlock(&queue->mutex);
+        return -1;
+    }
+    memset(new_task->request, 0, sizeof(request_t));
 
     new_task->request->method =
         request->method ? strdup(request->method) : NULL;

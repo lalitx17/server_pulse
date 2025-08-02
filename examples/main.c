@@ -119,30 +119,18 @@ int main(int argc, char *argv[]) {
             continue;
         }
 
-        route_t *route = route_find(&serv, request->method, request->url);
-        if (route) {
-            response_t response = {0};
-            route->handler(request, &response);
-            char *response_str = response_string(&response);
-            check_error(write(client_fd, response_str, strlen(response_str)),
-                        "write");
-            free(response_str);
-            response_free(&response);
-        } else {
-            response_t response = {0};
-            send_error_html(&response, STATUS_NOT_FOUND, "Not Found",
-                            "The requested resource was not found.");
-            char *response_str = response_string(&response);
-            check_error(write(client_fd, response_str, strlen(response_str)),
-                        "write");
-            free(response_str);
-            response_free(&response);
+        if (server_enqueue_task(&serv, client_fd, request) < 0) {
+            fprintf(stderr, "Failed to enqueue task\n");
+            request_destroy(request);
+            free(request);
+            close(client_fd);
+            continue;
         }
 
         request_destroy(request);
         free(request);
-
-        shutdown(client_fd, SHUT_WR);
-        close(client_fd);
     }
+
+    server_close(&serv);
+    return 0;
 }

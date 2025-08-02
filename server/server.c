@@ -1,4 +1,5 @@
 #include "server.h"
+#include "../thread_pool/thread_pool.h"
 #include <arpa/inet.h>
 #include <errno.h>
 #include <stdio.h>
@@ -6,6 +7,48 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
+
+static thread_pool_t thread_pool;
+
+static void server_worker_function(void *arg) {
+    server_t *serv = (server_t *)arg;
+
+    while (!thread_pool.shutdown) {
+        int client_fd;
+        request_t *request = malloc(sizeof(request_t));
+        if (!request) {
+            continue;
+        }
+        memset(request, 0, sizeof(request_t));
+
+        int result = task_queue_dequeue(&serv->task_queue, &client_fd, request);
+
+        if (result == 0) {
+            route_t *route = route_find(serv, request->method, request->url);
+            if (route) {
+                response_t response = {0};
+                route->handler(request, &response);
+                char *response_str = response_string(&response);
+                write(client_fd, response_str, strlen(response_str));
+                free(response_str);
+                response_free(&response);
+            } else {
+                response_t response = response_init(STATUS_NOT_FOUND, "", "");
+                send_error_html(&response, STATUS_NOT_FOUND, "Not Found",
+                                "The requested resource was not found.");
+                char *response_str = response_string(&response);
+                write(client_fd, response_str, strlen(response_str));
+                free(response_str);
+                response_free(&response);
+            }
+            request_destroy(request);
+            shutdown(client_fd, SHUT_WR);
+            close(client_fd);
+        } else if (result == -1 && thread_pool.shutdown) {
+            break;
+        }
+    }
+}
 
 int Server(server_t *serv, int port) {
     printf("Server() called with port %d\n", port);
@@ -35,6 +78,15 @@ int Server(server_t *serv, int port) {
 
     printf("Routes initialized successfully. Capacity: %d\n",
            serv->routes_capacity);
+
+    printf("Initializing thread pool...\n");
+    if (thread_pool_init(&thread_pool, 8, server_worker_function, serv) != 0) {
+        printf("ERROR: thread_pool_init failed\n");
+        task_queue_destroy(&serv->task_queue);
+        routes_free(serv->routes);
+        return -1;
+    }
+    printf("Thread pool initialized successfully\n");
 
     printf("Creating socket...\n");
     serv->listen_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -126,6 +178,11 @@ int server_close(server_t *serv) {
         serv->listen_fd = -1;
     }
 
+    thread_pool_shutdown(&thread_pool);
+    thread_pool_destroy(&thread_pool);
+
+    task_queue_destroy(&serv->task_queue);
+
     if (serv->routes) {
         routes_free(serv->routes);
         serv->routes = NULL;
@@ -133,5 +190,14 @@ int server_close(server_t *serv) {
         serv->routes_capacity = 0;
     }
 
+    printf("Server closed successfully\n");
+
     return 0;
+}
+
+int server_enqueue_task(server_t *serv, int client_fd, request_t *request) {
+    if (!serv)
+        return -1;
+
+    return task_queue_enqueue(&serv->task_queue, client_fd, request);
 }

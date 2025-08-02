@@ -100,6 +100,9 @@ int task_queue_enqueue(task_queue_t *queue, int client_fd, request_t *request) {
     pthread_cond_signal(&queue->not_empty);
     pthread_mutex_unlock(&queue->mutex);
 
+    printf("Task enqueued: %s %s %s\n", request->method, request->url,
+           request->version);
+
     return 0;
 }
 
@@ -158,11 +161,14 @@ int task_queue_dequeue(task_queue_t *queue, int *client_fd,
         request->headers = NULL;
     }
 
-    request_destroy(&task->request);
+    request_destroy(task->request);
     free(task);
 
     pthread_cond_signal(&queue->not_full);
     pthread_mutex_unlock(&queue->mutex);
+
+    printf("Task dequeued: %s %s %s\n", request->method, request->url,
+           request->version);
 
     return 0;
 }
@@ -222,7 +228,7 @@ void task_queue_destroy(task_queue_t *queue) {
     task_t *current = queue->head;
     while (current) {
         task_t *next = current->next;
-        request_destroy(&current->request);
+        request_destroy(current->request);
         free(current);
         current = next;
     }

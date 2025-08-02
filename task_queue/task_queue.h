@@ -24,12 +24,11 @@ typedef struct task_queue {
 
 int task_queue_init(task_queue_t *queue, int capacity);
 int task_queue_enqueue(task_queue_t *queue, int client_fd, request_t *request);
-int task_queue_dequeue(task_queue_t *queue, int *client_fd,
-                       request_t **request);
+int task_queue_dequeue(task_queue_t *queue, int *client_fd, request_t *request);
 int task_queue_size(task_queue_t *queue);
-int task_queue_is_empty(task_queue_t *queue);
-int task_queue_is_full(task_queue_t *queue);
-int task_queue_shutdown(task_queue_t *queue);
-int task_queue_destroy(task_queue_t *queue);
+bool task_queue_is_empty(task_queue_t *queue);
+bool task_queue_is_full(task_queue_t *queue);
+void task_queue_shutdown(task_queue_t *queue);
+void task_queue_destroy(task_queue_t *queue);
 
-#endif
+#endif // TASK_QUEUE_H

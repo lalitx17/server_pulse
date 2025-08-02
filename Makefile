@@ -5,11 +5,12 @@ REQUEST_DIR := request
 METRICS_DIR := metrics
 RESPONSE_DIR := response
 ROUTES_DIR := route
+TASK_QUEUE_DIR := task_queue
 
 #settings
 CC := gcc
 CFLAGS := -Wall -Wextra -g
-INCS := -I$(SERVER_DIR) -I$(REQUEST_DIR) -I$(METRICS_DIR) -I$(RESPONSE_DIR) -I$(ROUTES_DIR)
+INCS := -I$(SERVER_DIR) -I$(REQUEST_DIR) -I$(METRICS_DIR) -I$(RESPONSE_DIR) -I$(ROUTES_DIR) -I$(TASK_QUEUE_DIR)
 
 EXAMPLE_OBJ := $(EXAMPLE_DIR)/main.o
 SERVER_OBJ := $(SERVER_DIR)/server.o
@@ -17,6 +18,7 @@ REQUEST_OBJ := $(REQUEST_DIR)/request.o
 METRICS_OBJ := $(METRICS_DIR)/metrics.o
 RESPONSE_OBJ := $(RESPONSE_DIR)/response.o
 ROUTES_OBJ := $(ROUTES_DIR)/routes.o
+TASK_QUEUE_OBJ := $(TASK_QUEUE_DIR)/task_queue.o
 
 TARGET := server-pulse
 
@@ -37,12 +39,15 @@ $(RESPONSE_OBJ) : $(RESPONSE_DIR)/response.c $(RESPONSE_DIR)/response.h
 $(ROUTES_OBJ) : $(ROUTES_DIR)/route.c $(ROUTES_DIR)/route.h
 	$(CC) $(CFLAGS) $(INCS) -c $< -o $@
 
-$(EXAMPLE_OBJ) : $(EXAMPLE_DIR)/main.c $(SERVER_DIR)/server.h $(REQUEST_DIR)/request.h $(RESPONSE_DIR)/response.h $(ROUTES_DIR)/route.h
+$(TASK_QUEUE_OBJ) : $(TASK_QUEUE_DIR)/task_queue.c $(TASK_QUEUE_DIR)/task_queue.h
 	$(CC) $(CFLAGS) $(INCS) -c $< -o $@
 
-$(TARGET) : $(SERVER_OBJ) $(REQUEST_OBJ) $(METRICS_OBJ) $(RESPONSE_OBJ) $(ROUTES_OBJ) $(EXAMPLE_OBJ)
+$(EXAMPLE_OBJ) : $(EXAMPLE_DIR)/main.c $(SERVER_DIR)/server.h $(REQUEST_DIR)/request.h $(RESPONSE_DIR)/response.h $(ROUTES_DIR)/route.h $(TASK_QUEUE_DIR)/task_queue.h
+	$(CC) $(CFLAGS) $(INCS) -c $< -o $@
+
+$(TARGET) : $(SERVER_OBJ) $(REQUEST_OBJ) $(METRICS_OBJ) $(RESPONSE_OBJ) $(ROUTES_OBJ) $(TASK_QUEUE_OBJ) $(EXAMPLE_OBJ)
 	$(CC) $(CFLAGS) $(INCS) $^ -o $@
 
 .phony: clean
 clean:
-	rm -f $(TARGET) $(EXAMPLE_OBJ) $(SERVER_OBJ) $(METRICS_OBJ) $(REQUEST_OBJ) $(RESPONSE_OBJ) $(ROUTES_OBJ)
+	rm -f $(TARGET) $(EXAMPLE_OBJ) $(SERVER_OBJ) $(METRICS_OBJ) $(REQUEST_OBJ) $(RESPONSE_OBJ) $(ROUTES_OBJ) $(TASK_QUEUE_OBJ)

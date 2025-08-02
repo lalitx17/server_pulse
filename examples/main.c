@@ -13,34 +13,41 @@
 void check_error(int ret, const char *msg);
 
 void root_handler(request_t *request, response_t *response) {
+    (void)request;
     send_file(response, "public/home.html");
 }
 
 void cpustat_handler(request_t *request, response_t *response) {
+    (void)request;
     send_file(response, "public/cpustat.html");
 }
 
 void cpustat_json_handler(request_t *request, response_t *response) {
+    (void)request;
     char *json = get_cpu_metrics_json();
     send_json(response, json);
     free(json);
 }
 
 void memorystat_handler(request_t *request, response_t *response) {
+    (void)request;
     send_file(response, "public/memorystat.html");
 }
 
 void memorystat_json_handler(request_t *request, response_t *response) {
+    (void)request;
     char *json = get_memory_metrics_json();
     send_json(response, json);
     free(json);
 }
 
 void diskstat_handler(request_t *request, response_t *response) {
+    (void)request;
     send_file(response, "public/diskstat.html");
 }
 
 void diskstat_json_handler(request_t *request, response_t *response) {
+    (void)request;
     char *json = get_disk_metrics_json();
     send_json(response, json);
     free(json);
@@ -99,12 +106,17 @@ int main(int argc, char *argv[]) {
             close(client_fd);
             continue;
         }
+
         printf("buffer: %s\n", buffer);
         int parse_result = request_parse(buffer, request);
         if (parse_result == 0) {
             check_error(print_request(request), "print request");
         } else {
             fprintf(stderr, "Failed to parse request\n");
+            request_destroy(request);
+            free(request);
+            close(client_fd);
+            continue;
         }
 
         route_t *route = route_find(&serv, request->method, request->url);

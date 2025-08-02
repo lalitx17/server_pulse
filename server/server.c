@@ -26,6 +26,13 @@ int Server(server_t *serv, int port) {
         printf("ERROR: routes_init failed\n");
         return -1;
     }
+
+    printf("Initializing task queue...\n");
+    if (task_queue_init(&serv->task_queue, 100) != 0) {
+        printf("ERROR: task_queue_init failed\n");
+        return -1;
+    }
+
     printf("Routes initialized successfully. Capacity: %d\n",
            serv->routes_capacity);
 

@@ -2,6 +2,7 @@
 #define SERVER_H
 
 #include "../route/route.h"
+#include "../task_queue/task_queue.h"
 
 typedef struct server {
     int listen_fd;
@@ -9,6 +10,7 @@ typedef struct server {
     route_t *routes;
     int routes_count;
     int routes_capacity;
+    task_queue_t task_queue;
 } server_t;
 
 int Server(server_t *serv, int port);

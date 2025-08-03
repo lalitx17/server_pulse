@@ -80,7 +80,8 @@ int Server(server_t *serv, int port) {
            serv->routes_capacity);
 
     printf("Initializing thread pool...\n");
-    if (thread_pool_init(&thread_pool, 8, server_worker_function, serv) != 0) {
+    if (thread_pool_init(&serv->thread_pool, 8, server_worker_function, serv) !=
+        0) {
         printf("ERROR: thread_pool_init failed\n");
         task_queue_destroy(&serv->task_queue);
         routes_free(serv->routes);

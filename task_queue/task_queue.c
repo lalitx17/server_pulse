@@ -125,7 +125,7 @@ int task_queue_dequeue(task_queue_t *queue, int *client_fd,
         pthread_cond_wait(&queue->not_empty, &queue->mutex);
     }
 
-    if (queue->size == 0 && queue->shutdown) {
+    if (queue->shutdown || queue->size == 0) {
         pthread_mutex_unlock(&queue->mutex);
         return -1;
     }

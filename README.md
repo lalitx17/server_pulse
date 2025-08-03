@@ -1,4 +1,4 @@
-# PC-Pulse
+# Server Pulse
 
 A HTTP server that can handle requests and generate responses concurrently. It serves the metrics about the system.
 
